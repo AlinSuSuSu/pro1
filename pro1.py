@@ -7,6 +7,9 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello missa!'
 
+@app.route("/user/<name>")
+def user(name1):
+    return 'hello,%s'% name1
 
 if __name__ == '__main__':
     app.run(debug = True )
