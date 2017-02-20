@@ -33,11 +33,12 @@
     {% endfor %}
 
 </div>
-{% endblock %}
-{% block page_content %}
     {% block scripts %}
         {{ super() }}
         {{ moment.include_moment() }}
-    {% endblock %}
+{% endblock %}
+{% endblock %}
+{% block page_content %}
+
 {% endblock %}
 

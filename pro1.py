@@ -4,20 +4,21 @@ from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from datetime import datetime
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField,SubmitField
 from wtforms.validators import Required
 from flask import session,redirect,url_for,flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy import Table,Column,Integer,String,MetaData,ForeignKey
+
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 
 
-class NameForm(Form):
+class NameForm(FlaskForm):
     name = StringField("What's your name ?",validators=[Required()])
     submit = SubmitField('Submit')
 
