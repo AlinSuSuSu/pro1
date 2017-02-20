@@ -31,15 +31,13 @@
         {{ message }}
     </div>
     {% endfor %}
-    {% block page_content %}
-{% block scripts %}
-    {{ super() }}
-    {{ moment.include_moment() }}
-
-{% endblock %}
-    {% endblock %}
-
 
 </div>
+{% endblock %}
+{% block page_content %}
+    {% block scripts %}
+        {{ super() }}
+        {{ moment.include_moment() }}
+    {% endblock %}
 {% endblock %}
 

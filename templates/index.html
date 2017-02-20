@@ -13,15 +13,17 @@
     {{ super() }}
 {% endblock %}
 
-{% block page_content %}
+{% block content %}
+    <div class ='container'>
     {{ super() }}
+    </div>
+{% endblock %}
+{% block page_content %}
     <div class="page-header">
-    <h1>hello,{% if name %}{{ name }}{% else %}Stranger{% endif %}</h1>
-
+    </div><h1>hello,{% if name %}{{ name }}{% else %}Stranger{% endif %}</h1>
     {{ wtf.quick_form(form) }}
     </div>
     <p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
     <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
 {% endblock %}
-
 {% endblock %}
