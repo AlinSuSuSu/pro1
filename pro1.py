@@ -7,7 +7,7 @@ from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField,SubmitField
 from wtforms.validators import Required
-from flask import session,redirect,url_for
+from flask import session,redirect,url_for,flash
 
 class NameForm(Form):
     name = StringField("What's your name ?",validators=[Required()])
@@ -27,6 +27,9 @@ moment = Moment(app)
 def index():
     form = NameForm()
     if form.validate_on_submit():
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('Looks like you have changed your name !')
         session['name'] = form.name.data
         return redirect(url_for('index'))
     return render_template('index.html',form=form,name=session.get('name'),current_time = datetime.utcnow())
