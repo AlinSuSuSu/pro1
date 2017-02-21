@@ -11,51 +11,36 @@ from flask import session,redirect,url_for,flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy import Table,Column,Integer,String,MetaData,ForeignKey
-
+from  flask_migrate import Migrate,MigrateCommand
+from flask_script import Manager,Shell
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
-
-
-
-
-class NameForm(FlaskForm):
-    name = StringField("What's your name ?",validators=[Required()])
-    submit = SubmitField('Submit')
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] =\
 'sqlite:///' + os.path.join(basedir, 'mydata.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-
 app.config['SECRET_KEY']='HARD TO GUESS WHAT I SET'#设置密钥
+
+
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+manager = Manager(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app,db)
 
-"""
-engine = create_engine('sqllite:///D:/memory',echo= True)
-metadata = MetaData()
-users_table = Table('users',metadata,
-                    Column('id',Integer,primary_key=True),
-                    Column('name',String),
-                    Column('password',String)
-                    )
 
-metadata.create_all()
-ins = users_table.insert()
-new_user = ins.values(name='admin',password='admin')
-conn = engine.connect()
-conn.execute(new_user)
-"""
+
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role', lazy='dynamic')
     def __repr__(self):
         return '<Role %r>' % self.name
 
-    users = db.relationship('User', backref='role')
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -64,24 +49,30 @@ class User(db.Model):
         return '<User %r>' % self.username
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
-db.drop_all()
-db.create_all()
-admin_role = Role(name='Admin')
-db.session.add(admin_role)
-db.session.commit()
+
+class NameForm(FlaskForm):
+    name = StringField("What's your name ?",validators=[Required()])
+    submit = SubmitField('Submit')
+
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+manager.add_command("shell", Shell(make_context=make_shell_context))
+manager.add_command('db', MigrateCommand)
+
+
 #路由是处理URL和函数之间关系的程序。
 @app.route('/',methods=['GET','POST'])
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        '''old_name = session.get('name')
-
-        if old_name is not None and old_name != form.name.data:
-
-            flash('Looks like you have changed your name !')'''
         user = User.query.filter_by(username=form.name.data).first()
+        role = Role.query.filter_by(name='Admin').first()
+        if role is None:
+            role = Role(name='Admin')
+            db.session.add(role)
         if user is None:
-            user = User(username = form.name.data)
+            user = User(username = form.name.data,role_id = role.id)
+
             db.session.add(user)
             session['known'] = False
         else:
@@ -101,11 +92,10 @@ Flask 提供的render_template函数将Jinjia2模板引擎集成到了程序中�
 def user(name1):
     return render_template('user.html',name = name1)
 
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'),404
 
-
-
 if __name__ == '__main__':
-    app.run(debug = True )
+    app.run()
